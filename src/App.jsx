@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import Confetti from 'react-confetti';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const sadMessages = [
   "NO 😅",
@@ -201,10 +207,21 @@ function App() {
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '2rem', padding: '1rem 0 3rem' }}>
           <button
             className="btn-yes"
-            onClick={() => {
+            onClick={async () => {
               setYesPressed(true);
-              // Send instant email notification via Formspree
-              fetch("https://formspree.io/f/xvgopvje", { // Using a generic endpoint or user-specific one
+
+              // 1. Log to Supabase for your dashboard
+              await supabase
+                .from('responses')
+                .insert([{ 
+                  name: 'Ovayo', 
+                  response: 'YES', 
+                  timestamp: new Date().toISOString() 
+                }])
+                .catch(() => {});
+
+              // 2. Send instant email notification via Formspree
+              fetch("https://formspree.io/f/xvgopvje", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -212,7 +229,7 @@ function App() {
                   subject: "SHE SAID YES! ❤️",
                   message: "Ovayo just clicked YES to your movie date invitation for next Saturday at 6PM! 🍿🎬"
                 })
-              }).catch(() => {}); // Silent catch to not interrupt the user experience
+              }).catch(() => {});
             }}
             style={{
               transform: `scale(${yesBtnSize})`,

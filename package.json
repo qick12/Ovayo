@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.1",
+    "pusher-js": "^8.5.0",
     "react": "^19.2.5",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.2.5"
