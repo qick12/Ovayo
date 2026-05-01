@@ -3,10 +3,18 @@ import './index.css';
 import Confetti from 'react-confetti';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize Supabase (with safe fallbacks to prevent site crashes)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+let supabase = null;
+
+try {
+  if (supabaseUrl && supabaseAnonKey) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+} catch (e) {
+  console.error("Supabase init failed:", e);
+}
 
 const sadMessages = [
   "NO 😅",
@@ -211,14 +219,16 @@ function App() {
               setYesPressed(true);
 
               // 1. Log to Supabase for your dashboard
-              await supabase
-                .from('responses')
-                .insert([{ 
-                  name: 'Ovayo', 
-                  response: 'YES', 
-                  timestamp: new Date().toISOString() 
-                }])
-                .catch(() => {});
+              if (supabase) {
+                await supabase
+                  .from('responses')
+                  .insert([{ 
+                    name: 'Ovayo', 
+                    response: 'YES', 
+                    timestamp: new Date().toISOString() 
+                  }])
+                  .catch(() => {});
+              }
 
               // 2. Send instant email notification via Formspree
               fetch("https://formspree.io/f/xvgopvje", {
