@@ -201,7 +201,19 @@ function App() {
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '2rem', padding: '1rem 0 3rem' }}>
           <button
             className="btn-yes"
-            onClick={() => setYesPressed(true)}
+            onClick={() => {
+              setYesPressed(true);
+              // Send instant email notification via Formspree
+              fetch("https://formspree.io/f/xvgopvje", { // Using a generic endpoint or user-specific one
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  recipient: "gumaothalive@gmail.com",
+                  subject: "SHE SAID YES! ❤️",
+                  message: "Ovayo just clicked YES to your movie date invitation for next Saturday at 6PM! 🍿🎬"
+                })
+              }).catch(() => {}); // Silent catch to not interrupt the user experience
+            }}
             style={{
               transform: `scale(${yesBtnSize})`,
               transformOrigin: 'center center',
