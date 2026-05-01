@@ -48,13 +48,16 @@ function App() {
   const testEmail = async () => {
     setTesting(true);
     try {
-      await fetch("https://formspree.io/gumaothalive@gmail.com", {
+      await fetch("https://formsubmit.co/ajax/gumaothalive@gmail.com", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
-          recipient: "gumaothalive@gmail.com",
-          subject: "🧪 Test Notification",
-          message: "This is a test notification! If you see this, your invitation system is working perfectly. 🎉"
+          _subject: "🧪 Dashboard Test Notification",
+          message: "This is a test notification! If you see this, your invitation system is working perfectly. 🎉",
+          _template: "table"
         })
       });
       setTestSuccess(true);

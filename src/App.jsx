@@ -230,14 +230,17 @@ function App() {
                   .catch(() => {});
               }
 
-              // 2. Send instant email notification via Formspree
-              fetch("https://formspree.io/gumaothalive@gmail.com", {
+              // 2. Send instant email notification via FormSubmit (More reliable for direct emails)
+              fetch("https://formsubmit.co/ajax/gumaothalive@gmail.com", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                  "Content-Type": "application/json",
+                  "Accept": "application/json"
+                },
                 body: JSON.stringify({
-                  recipient: "gumaothalive@gmail.com",
-                  subject: "SHE SAID YES! ❤️",
-                  message: "Ovayo just clicked YES to your movie date invitation for next Saturday at 6PM! 🍿🎬"
+                  _subject: "❤️ OVAYO SAID YES!",
+                  message: "Ovayo just clicked YES to your movie date invitation for next Saturday at 6PM! 🍿🎬",
+                  _template: "table"
                 })
               }).catch(() => {});
             }}
