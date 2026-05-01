@@ -1,35 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function App() {
-  const [testing, setTesting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [yesCount, setYesCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const testEmail = async () => {
-    setTesting(true);
-    try {
-      await fetch("https://formspree.io/f/xvgopvje", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipient: "gumaothalive@gmail.com",
-          subject: "🧪 Test Notification",
-          message: "This is a test notification from your Response Dashboard! If you see this, it works. 🎉"
-        })
-      });
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (e) {
-      alert("Failed to send test email.");
-    }
-    setTesting(false);
+  const fetchResponses = async () => {
+    setLoading(true);
+    const { count, error } = await supabase
+      .from('responses')
+      .select('*', { count: 'exact', head: true })
+      .eq('response', 'YES');
+    
+    if (!error) setYesCount(count || 0);
+    setLoading(false);
   };
+
+  useEffect(() => {
+    fetchResponses();
+    // Subscribe to real-time changes
+    const subscription = supabase
+      .channel('public:responses')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'responses' }, () => {
+        fetchResponses();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
 
   return (
     <div className="dashboard-card">
-      <div className="status-badge">Mission Control</div>
+      <div className="status-badge">Live Monitor</div>
       <h1>Project Ovayo</h1>
-      <p>Your interactive invitation is ready to be sent.</p>
+      <p>Tracking your interactive invitation status.</p>
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2.5rem' }}>
+        <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '16px', flex: 1 }}>
+          <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem' }}>YES RESPONSES</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: '900', color: '#ec4899' }}>
+            {loading ? "..." : yesCount}
+          </div>
+        </div>
+      </div>
 
       <div style={{ textAlign: 'left', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
         Live Invitation Link:
@@ -38,17 +59,12 @@ function App() {
         https://qick12.github.io/Ovayo/
       </div>
 
-      <button 
-        className="btn-test" 
-        onClick={testEmail}
-        disabled={testing}
-      >
-        {success ? "✅ Test Sent!" : testing ? "Sending..." : "Send Test Notification ✉️"}
+      <button className="btn-test" onClick={fetchResponses}>
+        Refresh Status 🔄
       </button>
 
       <div className="footer-note">
-        When she clicks <strong>YES</strong>, an instant email will be sent to:<br/>
-        <span style={{ color: '#94a3b8' }}>gumaothalive@gmail.com</span>
+        When she clicks <strong>YES</strong>, this counter will update instantly and you will receive an email.
       </div>
     </div>
   );
