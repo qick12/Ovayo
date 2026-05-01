@@ -27,7 +27,7 @@ const stickers = [
 const successSticker = "https://fonts.gstatic.com/s/e/notoemoji/latest/1f970/512.gif"; // Success 🥰
 
 const introSequence = [
-  "Hi Ovay…",
+  "Hi Ovayo please",
   "I built this site for you.",
   "Because asking normally felt too boring.",
   "So I made it official…"
