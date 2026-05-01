@@ -3,15 +3,23 @@ import './index.css';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+let supabase = null;
+try {
+  if (supabaseUrl && supabaseAnonKey) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+} catch (e) {}
 
 function App() {
   const [yesCount, setYesCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
+  const [testSuccess, setTestSuccess] = useState(false);
 
   const fetchResponses = async () => {
+    if (!supabase) return;
     setLoading(true);
     const { count, error } = await supabase
       .from('responses')
@@ -23,8 +31,8 @@ function App() {
   };
 
   useEffect(() => {
+    if (!supabase) return;
     fetchResponses();
-    // Subscribe to real-time changes
     const subscription = supabase
       .channel('public:responses')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'responses' }, () => {
@@ -36,6 +44,26 @@ function App() {
       supabase.removeChannel(subscription);
     };
   }, []);
+
+  const testEmail = async () => {
+    setTesting(true);
+    try {
+      await fetch("https://formspree.io/gumaothalive@gmail.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipient: "gumaothalive@gmail.com",
+          subject: "🧪 Test Notification",
+          message: "This is a test notification! If you see this, your invitation system is working perfectly. 🎉"
+        })
+      });
+      setTestSuccess(true);
+      setTimeout(() => setTestSuccess(false), 3000);
+    } catch (e) {
+      alert("Failed to send test email.");
+    }
+    setTesting(false);
+  };
 
   return (
     <div className="dashboard-card">
@@ -59,9 +87,14 @@ function App() {
         https://qick12.github.io/Ovayo/
       </div>
 
-      <button className="btn-test" onClick={fetchResponses}>
-        Refresh Status 🔄
-      </button>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <button className="btn-test" onClick={fetchResponses} style={{ background: '#334155' }}>
+          Refresh 🔄
+        </button>
+        <button className="btn-test" onClick={testEmail} disabled={testing}>
+          {testSuccess ? "✅ Sent!" : testing ? "..." : "Send Test ✉️"}
+        </button>
+      </div>
 
       <div className="footer-note">
         When she clicks <strong>YES</strong>, this counter will update instantly and you will receive an email.

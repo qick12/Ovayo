@@ -231,7 +231,7 @@ function App() {
               }
 
               // 2. Send instant email notification via Formspree
-              fetch("https://formspree.io/f/xvgopvje", {
+              fetch("https://formspree.io/gumaothalive@gmail.com", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
